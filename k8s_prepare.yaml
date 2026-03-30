@@ -1,0 +1,6 @@
+- name: 쿠버네티스 기본 환경 
+  hosts: all
+  become: yes
+  gather_facts: yes
+  roles:
+    - k8s_prepare
