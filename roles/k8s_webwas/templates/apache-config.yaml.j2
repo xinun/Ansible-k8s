@@ -1,0 +1,15 @@
+apiVersion: v1
+data:
+  proxy.conf: |
+    LoadModule proxy_module modules/mod_proxy.so
+    LoadModule proxy_http_module modules/mod_proxy_http.so
+
+    <VirtualHost *:80>
+        ProxyPreserveHost On
+        ProxyPass / http://10.101.120.174:8080/
+        ProxyPassReverse / http://10.101.120.174:8080/
+    </VirtualHost>
+kind: ConfigMap
+metadata:
+  name: apache-config
+  namespace: default

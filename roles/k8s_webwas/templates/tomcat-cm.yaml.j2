@@ -1,0 +1,13 @@
+apiVersion: v1
+data:
+  context.xml: "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<Context>\n    <WatchedResource>WEB-INF/web.xml</WatchedResource>\n
+    \   <WatchedResource>WEB-INF/tomcat-web.xml</WatchedResource>\n    <WatchedResource>${catalina.base}/conf/web.xml</WatchedResource>\n
+    \   \n    <Resource name=\"jdbc/mariadb\"\n              auth=\"Container\"\n
+    \             type=\"javax.sql.DataSource\"\n              driverClassName=\"org.mariadb.jdbc.Driver\"\n
+    \             url=\"jdbc:mariadb://mariadb-svc:3306/test\" \n              username=\"admin\"\n
+    \             password=\"pass123#\"\n              maxTotal=\"20\"\n              maxIdle=\"10\"\n
+    \             maxWaitMillis=\"-1\" />\n</Context>\n"
+kind: ConfigMap
+metadata:
+  name: tomcat-cm
+  namespace: default
