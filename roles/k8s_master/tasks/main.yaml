@@ -1,8 +1,7 @@
 ---
 - name: kubeadm 초기화
   shell: |
-    kubeadm init --pod-network-cidr=192.168.0.0/16 \
-                 --apiserver-advertise-address=10.60.100.93
+    kubeadm init
   register: init_result
   args:
     creates: /etc/kubernetes/admin.conf  
@@ -25,3 +24,18 @@
 - name: 조인 명령어를 메모리에 저장
   set_fact:
     k8s_join_command: "{{ join_command_raw.stdout }}"
+
+
+- name: alias 등록
+  blockinfile:
+    path: ~/.bashrc
+    marker: "# {mark} ANSIBLE MANAGED KUBECTL ALIAS"
+    block: |
+      # kubectl 단축어 설정
+      alias k='kubectl'
+
+      # kubectl 자동 완성(Tab) 설정
+      source <(kubectl completion bash)
+
+      # 단축어 'k'에서도 자동 완성이 되도록 설정
+      complete -o default -F __start_kubectl k
