@@ -1,5 +1,3 @@
----
-
 - name: Chrony 설치 
   dnf: 
     name: chrony
@@ -36,10 +34,9 @@
   blockinfile:
     path: /etc/hosts
     block: |
-      10.60.100.93 k8s-master
-      10.60.100.94 k8s-worker1
-      10.60.100.95 k8s-worker2
-
+      {% for host in groups['all'] %}
+      {{ hostvars[host]['ansible_host'] }} {{ host }}
+      {% endfor %}
 
 - name: 오버레이 및 브릿지 넷필터 모듈 로드
   community.general.modprobe:
