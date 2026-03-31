@@ -1,0 +1,23 @@
+---
+# 1. [공통] 모든 노드(마스터, 워커) 환경 준비
+- name: "Step 1: 모든 노드 기본 설정 및 엔진 설치"
+  hosts: k8s_cluster       # hosts 파일의 모든 서버 그룹
+  become: yes              # root 권한 사용
+  roles:
+    - k8s_prepare          # 방화벽, 스왑, /etc/hosts 설정
+    - containerd           # 컨테이너 엔진 설치
+    - k8s_install          # kubeadm, kubelet 패키지 설치
+
+# 2. [마스터] 93번 서버 초기화
+- name: "Step 2: 마스터 노드 초기화 및 토큰 생성"
+  hosts: k8s_master        # hosts 파일의 [k8s_master] 그룹
+  become: yes
+  roles:
+    - k8s_master           # kubeadm init 및 조인 명령어 추출
+
+# 3. [워커] 94, 95번 서버 클러스터 합류
+- name: "Step 3: 워커 노드 클러스터 조인"
+  hosts: k8s_worker        # hosts 파일의 [k8s_worker] 그룹
+  become: yes
+  roles:
+    - k8s_worker           # 마스터가 만든 토큰으로 조인 실행

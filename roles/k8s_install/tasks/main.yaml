@@ -1,0 +1,34 @@
+- name: SELinux Permissive
+  shell: setenforce 0
+  ignore_errors: yes  
+
+- name: SELinux 설정 영구 적용
+  replace:
+    path: /etc/selinux/config
+    regexp: '^SELINUX=enforcing$'
+    replace: 'SELINUX=permissive'
+
+- name: Kubernetes 1.35
+  yum_repository:
+    name: kubernetes
+    description: Kubernetes
+    baseurl: https://pkgs.k8s.io/core:/stable:/v1.35/rpm/
+    enabled: yes
+    gpgcheck: yes
+    gpgkey: https://pkgs.k8s.io/core:/stable:/v1.35/rpm/repodata/repomd.xml.key
+    exclude: kubelet kubeadm kubectl cri-tools kubernetes-cni
+
+- name: kubelet, kubeadm, kubectl
+  dnf:
+    name:
+      - kubelet
+      - kubeadm
+      - kubectl
+    state: present
+    disable_excludes: kubernetes
+
+- name: kubelet 활성화 
+  service:
+    name: kubelet
+    state: started
+    enabled: yes

@@ -32,6 +32,15 @@
     regexp: '^([^#].*?\sswap\s+sw\s+.*)$'
     replace: '# \1'
 
+- name: /etc/hosts 도메인 작성
+  blockinfile:
+    path: /etc/hosts
+    block: |
+      10.60.100.93 k8s-master
+      10.60.100.94 k8s-worker1
+      10.60.100.95 k8s-worker2
+
+
 - name: 오버레이 및 브릿지 넷필터 모듈 로드
   community.general.modprobe:
     name: "{{ item }}"

@@ -1,0 +1,27 @@
+---
+- name: kubeadm 초기화
+  shell: |
+    kubeadm init --pod-network-cidr=192.168.0.0/16 \
+                 --apiserver-advertise-address=10.60.100.93
+  register: init_result
+  args:
+    creates: /etc/kubernetes/admin.conf  
+
+- name: kubectl 설정 폴더
+  file:
+    path: "{{ ansible_env.HOME }}/.kube"
+    state: directory
+
+- name: 관리자 설정 파일 복사
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: "{{ ansible_env.HOME }}/.kube/config"
+    remote_src: yes
+
+- name: 조인 명령 실행
+  shell: kubeadm token create --print-join-command
+  register: join_command_raw
+
+- name: 조인 명령어를 메모리에 저장
+  set_fact:
+    k8s_join_command: "{{ join_command_raw.stdout }}"

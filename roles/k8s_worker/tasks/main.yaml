@@ -1,0 +1,5 @@
+---
+- name:  클러스터에 조인 
+  shell: "{{ hostvars['master-node']['k8s_join_command'] }}"
+  args:
+    creates: /etc/kubernetes/kubelet.conf  

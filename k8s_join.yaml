@@ -1,0 +1,14 @@
+---
+# 1. 마스터에서 토큰 생성 및 변수 저장
+- name: "마스터 노드 초기화 및 토큰 추출"
+  hosts: k8s_master
+  become: yes
+  roles:
+    - k8s_master
+
+# 2. 워커에서 마스터의 토큰을 받아 조인 실행
+- name: "워커 노드 클러스터 조인"
+  hosts: k8s_worker
+  become: yes
+  roles:
+    - k8s_worker

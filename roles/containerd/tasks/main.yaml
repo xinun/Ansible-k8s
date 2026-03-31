@@ -1,0 +1,21 @@
+- name: containerd 설치 
+  dnf:
+    name: containerd.io
+    state: present
+
+- name: config.toml 설정
+  shell: "containerd config default > /etc/containerd/config.toml"
+  args:
+    creates: /etc/containerd/config.toml
+
+- name: SystemdCgroup  true
+  replace:
+    path: /etc/containerd/config.toml
+    regexp: 'SystemdCgroup = false'
+    replace: 'SystemdCgroup = true'
+
+- name: containerd 서비스 시작
+  service:
+    name: containerd
+    state: started
+    enabled: yes
