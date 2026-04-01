@@ -39,7 +39,7 @@ spec:
         - mountPath: /usr/local/tomcat/conf/context.xml
           name: context-config
           subPath: context.xml
-        - mountPath: /usr/local/tomcat/webapps/ROOT
+        - mountPath: /usr/local/tomcat/webapps
           name: war-storage
           subPath: ROOT
         - mountPath: /usr/local/tomcat/lib/mariadb-java-client.jar
@@ -60,7 +60,7 @@ spec:
       - name: war-storage
         nfs:
           path: /root/nfs-share
-          server: 10.60.100.93
+          server: {{ nfs_server_ip }}
       - configMap:
           defaultMode: 420
           name: tomcat-web-cm

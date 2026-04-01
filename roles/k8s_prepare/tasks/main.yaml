@@ -38,6 +38,17 @@
       {{ hostvars[host]['ansible_host'] }} {{ host }}
       {% endfor %}
 
+- name: "NFS 클라이언트 도구 설치 (nfs-utils)"
+  dnf:
+    name: nfs-utils
+    state: present
+
+- name: "RPCBind 서비스 시작 및 활성화"
+  service:
+    name: rpcbind
+    state: started
+    enabled: yes
+
 - name: 오버레이 및 브릿지 넷필터 모듈 로드
   community.general.modprobe:
     name: "{{ item }}"

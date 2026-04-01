@@ -1,0 +1,15 @@
+---
+nfs_server_ip: "10.140.20.121"      # 마스터 노드 IP (NFS 서버)
+
+# --- Apache (Web) 설정 ---
+apache_node_port: 31450            # 외부에서 접속할 포트 번호
+apache_replicas: 1                 # 아파치 서버 대수
+
+# --- Tomcat (WAS) 설정 ---
+tomcat_replicas: 1                 # 톰캣 서버 대수
+tomcat_version: "9.0"              # 사용할 톰캣 버전
+
+# --- MariaDB (DB) 설정 ---
+db_root_password: "pass123#"       # DB 루트 비밀번호
+db_name: "test"                    # 초기 생성할 데이터베이스 이름
+mariadb_version: "10.6"            # 마리아디비 버전

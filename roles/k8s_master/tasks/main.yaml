@@ -39,3 +39,40 @@
 
       # 단축어 'k'에서도 자동 완성이 되도록 설정
       complete -o default -F __start_kubectl k
+
+- name: "NFS 서버 패키지 설치"
+  dnf:
+    name: nfs-utils
+    state: present
+
+- name: "NFS 서비스 시작 및 활성화"
+  service:
+    name: nfs-server
+    state: started
+    enabled: yes
+
+# 2. 공유 디렉토리 생성 및 권한 설정
+- name: "NFS 공유 디렉토리 생성 (MariaDB용 포함)"
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0777'  # 모든 사용자 읽기/쓰기 권한 부여
+    owner: root
+    group: root
+  loop:
+    - /root/nfs-share
+    - /root/nfs-share/mysql
+
+# 3. /etc/exports 설정 (NFS 권한 관리)
+- name: "NFS exports 설정 파일 작성"
+  lineinfile:
+    path: /etc/exports
+    line: "/root/nfs-share *(rw,sync,no_root_squash)"
+    create: yes
+  register: exports_result
+
+# 4. 설정 변경 시 즉시 반영
+- name: "NFS 내보내기 설정 갱신 (exportfs)"
+  shell: "exportfs -ra"
+  when: exports_result.changed
+

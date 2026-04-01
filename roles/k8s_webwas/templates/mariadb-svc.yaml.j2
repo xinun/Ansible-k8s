@@ -3,14 +3,12 @@ kind: Service
 metadata:
   name: mariadb-svc
   namespace: default
+  labels:
+    app: mariadb
 spec:
-  clusterIP: 10.107.223.114
-  clusterIPs:
-  - 10.107.223.114
-  ipFamilies:
-  - IPv4
-  ipFamilyPolicy: SingleStack
-  ports:
-  - port: 3306
   selector:
     app: mariadb
+  ports:
+    - protocol: TCP
+      port: 3306        
+      targetPort: 3306  

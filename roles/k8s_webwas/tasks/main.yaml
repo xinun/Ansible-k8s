@@ -1,0 +1,44 @@
+---
+- name: "배포용 임시 디렉토리 생성"
+  file:
+    path: /root/web-was-deploy
+    state: directory
+
+- name: "J2 템플릿 파일들을 YAML로 변환하여 복사"
+  template:
+    src: "{{ item }}"
+    dest: "/root/web-was-deploy/{{ item | basename | replace('.j2', '') }}"
+  with_fileglob:
+    - "../templates/*.j2"
+- name: "기존 Kubernetes 리소스 삭제 (Clean up)"
+  shell: "kubectl delete -f /root/web-was-deploy/{{ item }} --ignore-not-found=true"
+  loop:
+    - apache-deploy.yaml
+    - tomcat-deploy.yaml
+    - mariadb-deploy.yaml
+    - apache-svc.yaml
+    - tomcat-svc.yaml
+    - mariadb-svc.yaml
+    - apache-config.yaml
+    - tomcat-cm.yaml
+    - tomcat-web-cm.yaml
+  register: delete_result
+  failed_when: false # 삭제할 게 없어도 에러로 처리하지 않음
+
+- name: "리소스 삭제 완료 대기 (Grace period)"
+  pause:
+    seconds: 10
+  when: delete_result.changed
+
+- name: "Kubernetes 리소스 적용 (순차 배포)"
+  shell: "kubectl apply -f /root/web-was-deploy/{{ item }}"
+  loop:
+    - apache-config.yaml
+    - tomcat-cm.yaml
+    - tomcat-web-cm.yaml
+    - mariadb-svc.yaml
+    - tomcat-svc.yaml
+    - apache-svc.yaml
+    - mariadb-deploy.yaml
+    - tomcat-deploy.yaml
+    - apache-deploy.yaml

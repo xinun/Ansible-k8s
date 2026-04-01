@@ -1,0 +1,6 @@
+---
+- name: "Kubernetes WEB-WAS-DB 배포"
+  hosts: k8s_master
+  become: yes
+  roles:
+    - k8s_webwas

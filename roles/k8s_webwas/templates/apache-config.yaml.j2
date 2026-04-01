@@ -6,8 +6,8 @@ data:
 
     <VirtualHost *:80>
         ProxyPreserveHost On
-        ProxyPass / http://10.101.120.174:8080/
-        ProxyPassReverse / http://10.101.120.174:8080/
+        ProxyPass / http://tomcat-svc:8080/
+        ProxyPassReverse / http://tomcat-svc:8080/
     </VirtualHost>
 kind: ConfigMap
 metadata:
