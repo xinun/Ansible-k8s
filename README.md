@@ -22,7 +22,7 @@
 
 ---
 
-![image.png](attachment:975c1724-dce7-4bd8-b4ba-86ffb336cf15:image.png)
+<img width="526" height="334" alt="image" src="https://github.com/user-attachments/assets/2cf631c1-547e-4b6a-80df-5813a734bdda" />
 
 ## host.ini(必)
 
