@@ -1,36 +1,68 @@
 ---
-- name: "배포용 임시 디렉토리 생성"
+- name: "1. 배포용 임시 디렉토리 생성"
   file:
     path: /root/web-was-deploy
     state: directory
+# 1. 작업 디렉토리 및 NFS 경로 초기화 (오염 방지)
+- name: "기존 NFS 데이터 및 임시 디렉토리 초기화"
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /root/web-was-deploy
+    - /root/nfs-share/ROOT
+    - /root/nfs-share/lib
 
-- name: "J2 템플릿 파일들을 YAML로 변환하여 복사"
+- name: "NFS 필수 디렉토리 생성"
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /root/web-was-deploy
+    - /root/nfs-share/ROOT
+    - /root/nfs-share/lib
+
+# 2. 파일 전송 (Controller -> Master Node)
+- name: "WAR 파일 및 JDBC 드라이버를 NFS 서버로 전송"
+  copy:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    mode: '0644'
+  loop:
+    - { src: "ROOT.war", dest: "/root/nfs-share/ROOT/ROOT.war" }
+    - { src: "mariadb-java-client-3.5.7.jar", dest: "/root/nfs-share/lib/mariadb-java-client.jar" }
+
+# 3. WAR 파일 압축 해제 및 드라이버 주입
+- name: "WAR 파일 압축 해제"
+  unarchive:
+    src: /root/nfs-share/ROOT/ROOT.war
+    dest: /root/nfs-share/ROOT/
+    remote_src: yes
+
+- name: "애플리케이션 라이브러리에 드라이버 복사 (이중 안전)"
+  copy:
+    src: /root/nfs-share/lib/mariadb-java-client.jar
+    dest: /root/nfs-share/ROOT/WEB-INF/lib/mariadb-java-client.jar
+    remote_src: yes
+    mode: '0644'
+
+# 4. K8s 템플릿 변환 및 배포
+- name: "J2 템플릿 변환"
   template:
     src: "{{ item }}"
     dest: "/root/web-was-deploy/{{ item | basename | replace('.j2', '') }}"
-  with_fileglob:
-    - "../templates/*.j2"
-- name: "기존 Kubernetes 리소스 삭제 (Clean up)"
+  with_fileglob: ["../templates/*.j2"]
+
+- name: "기존 K8s 리소스 삭제 및 재생성 (교체 배포)"
   shell: "kubectl delete -f /root/web-was-deploy/{{ item }} --ignore-not-found=true"
-  loop:
-    - apache-deploy.yaml
-    - tomcat-deploy.yaml
-    - mariadb-deploy.yaml
-    - apache-svc.yaml
-    - tomcat-svc.yaml
-    - mariadb-svc.yaml
-    - apache-config.yaml
-    - tomcat-cm.yaml
-    - tomcat-web-cm.yaml
-  register: delete_result
-  failed_when: false # 삭제할 게 없어도 에러로 처리하지 않음
+  loop: [ "apache-deploy.yaml", "tomcat-deploy.yaml", "mariadb-deploy.yaml" ]
+  failed_when: false
 
-- name: "리소스 삭제 완료 대기 (Grace period)"
-  pause:
-    seconds: 10
-  when: delete_result.changed
+- name: "리소스 정리 대기"
+  pause: { seconds: 5 }
 
-- name: "Kubernetes 리소스 적용 (순차 배포)"
+- name: "Kubernetes 리소스 적용"
   shell: "kubectl apply -f /root/web-was-deploy/{{ item }}"
   loop:
     - apache-config.yaml
